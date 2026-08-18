@@ -13,13 +13,12 @@ pipeline:
 
 ```text
 few-shot data -> Cr-GAN training -> image generation -> SimCLR pre-training
-              -> BIDFC-derived fine-tuning or linear evaluation
+              -> fine-tuning
 ```
 
 Only the code required by this pipeline is included. Datasets, generated
 images, logs, experiment history, and checkpoints are intentionally excluded.
-The BIDFC-derived component contains only the cleaned downstream fine-tuning
-and linear-evaluation protocol, not the complete BIDFC pre-training project.
+The repository includes a standalone downstream fine-tuning script.
 
 ## Installation
 
@@ -89,7 +88,7 @@ python evaluation/simclr/run.py \
   --gpu-index 0
 ```
 
-## Linear probe or fine-tuning
+## Fine-tuning
 
 ```bash
 python evaluation/finetune/finetune.py \
@@ -97,13 +96,13 @@ python evaluation/finetune/finetune.py \
   --val-dir /path/to/validation \
   --pretrained runs/simclr/checkpoint_0100.pth.tar \
   --initialization simclr \
-  --mode linear \
+  --mode finetune \
   --classes 6 \
   --output runs/finetune
 ```
 
-Use `--mode finetune` to update the full ResNet-18 backbone. Reported metrics
-are computed directly from validation predictions; no curve shaping or metric
+Fine-tuning updates the full ResNet-18 backbone. Reported metrics are computed
+directly from validation predictions; no curve shaping or metric
 post-processing is performed.
 
 ## Papers and acknowledgements
