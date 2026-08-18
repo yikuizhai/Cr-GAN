@@ -120,13 +120,6 @@ This release uses or adapts ideas and code associated with the following work:
   Framework for Contrastive Learning of Visual Representations," ICML,
   PMLR 119:1597-1607, 2020.
   [[paper](https://proceedings.mlr.press/v119/chen20j.html)]
-- BIDFC: Y. Zhai et al., "Weakly Contrastive Learning via Batch Instance
-  Discrimination and Feature Clustering for Small Sample SAR ATR," IEEE
-  Transactions on Geoscience and Remote Sensing, vol. 60, pp. 1-17, article
-  5204317, 2022, doi: 10.1109/TGRS.2021.3066195.
-  [[paper](https://doi.org/10.1109/TGRS.2021.3066195)]
-  [[code](https://github.com/Wenlve-Zhou/BIDFC-master)]
-
 The bundled SimCLR implementation retains its original copyright notice and
 MIT license in `evaluation/simclr/LICENSE.txt`.
 
