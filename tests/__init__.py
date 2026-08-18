@@ -1,0 +1,1 @@
+"""CR-GAN smoke tests."""

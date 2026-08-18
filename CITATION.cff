@@ -1,0 +1,43 @@
+cff-version: 1.2.0
+message: "If you use Cr-GAN in your research, please cite the paper below."
+title: "Cr-GAN: Consistency-Regularized GAN for Few-Shot SAR Target Recognition"
+type: software
+authors:
+  - family-names: Zhai
+    given-names: Yikui
+  - family-names: Liu
+    given-names: Shikuang
+  - family-names: Zhou
+    given-names: Wenlve
+  - family-names: Zhang
+    given-names: Hongsheng
+  - family-names: Zhou
+    given-names: Zhiheng
+  - family-names: Tian
+    given-names: Xiaolin
+  - family-names: Chen
+    given-names: C. L. Philip
+repository-code: "https://github.com/yikuizhai/Cr-GAN"
+license: MIT
+date-released: 2026-08-18
+preferred-citation:
+  type: article
+  title: "Consistency-Regularized GAN for Few-Shot SAR Target Recognition"
+  authors:
+    - family-names: Zhai
+      given-names: Yikui
+    - family-names: Liu
+      given-names: Shikuang
+    - family-names: Zhou
+      given-names: Wenlve
+    - family-names: Zhang
+      given-names: Hongsheng
+    - family-names: Zhou
+      given-names: Zhiheng
+    - family-names: Tian
+      given-names: Xiaolin
+    - family-names: Chen
+      given-names: C. L. Philip
+  year: 2026
+  doi: "10.48550/arXiv.2601.15681"
+  url: "https://arxiv.org/abs/2601.15681"
