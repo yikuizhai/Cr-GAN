@@ -97,7 +97,7 @@ python evaluation/finetune/finetune.py \
   --pretrained runs/simclr/checkpoint_0100.pth.tar \
   --initialization simclr \
   --mode finetune \
-  --classes 6 \
+  --classes 10 \
   --output runs/finetune
 ```
 
