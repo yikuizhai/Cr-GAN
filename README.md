@@ -59,7 +59,7 @@ python prepare_fewshot.py \
 python train.py \
   --path data/train_4shot \
   --log_dir runs/crgan \
-  --classes 6 \
+  --classes 10 \
   --train_samples 24 \
   --gpu 0
 ```
@@ -71,6 +71,7 @@ python generate.py \
   --checkpoint runs/crgan/train_4shot/Checkpoints/G_iter_10001.pkl \
   --output outputs/generated \
   --num-images 5000 \
+  --classes 10 \
   --gpu 0
 ```
 

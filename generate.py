@@ -21,7 +21,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--latent-dim", type=int, default=100)
     parser.add_argument("--img-size", type=int, default=64)
     parser.add_argument("--channels", type=int, default=1)
-    parser.add_argument("--classes", type=int, default=6)
+    parser.add_argument("--classes", type=int, default=10)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--gpu", type=int, default=0, help="GPU index; CPU is used when CUDA is unavailable")
     return parser.parse_args()

@@ -51,7 +51,7 @@ parser.add_argument('--gpu', default=0, type=int,
                     help='GPU id to use.')
 parser.add_argument("--saved_interval", type=int, default=10, help="interval between saved time")
 
-parser.add_argument('--classes', default=6, type=int, metavar='N',
+parser.add_argument('--classes', default=10, type=int, metavar='N',
                     help='number of class (default: 10)')
 parser.add_argument('--lr', default=1e-4, type=float,
                     metavar='LR', help='initial learning rate for GAN')

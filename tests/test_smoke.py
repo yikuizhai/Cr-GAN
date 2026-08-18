@@ -18,7 +18,7 @@ class CRGANSmokeTest(unittest.TestCase):
             latent_dim=100,
             img_size=64,
             channels=1,
-            classes=6,
+            classes=10,
         )
 
     def test_model_shapes(self) -> None:
