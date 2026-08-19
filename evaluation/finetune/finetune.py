@@ -1,4 +1,4 @@
-"""BIDFC-derived linear-probe and fine-tuning evaluation for CR-GAN."""
+"""Linear evaluation and fine-tuning for CR-GAN."""
 
 from __future__ import annotations
 

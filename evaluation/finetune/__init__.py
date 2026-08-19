@@ -1,1 +1,1 @@
-"""BIDFC-derived downstream evaluation."""
+"""Downstream evaluation utilities."""

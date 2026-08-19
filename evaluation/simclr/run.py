@@ -11,7 +11,6 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-import torch.nn.functional as F
 import torchvision.transforms as transforms
 
 model_names = sorted(name for name in models.__dict__
@@ -76,11 +75,11 @@ def main():
 
     if args.visualize_only:
         if not args.vis_data:
-            raise ValueError("错误: 使用 --visualize-only 时必须提供 --vis-data 路径。")
-        print("--- 仅运行 t-SNE 可视化 ---")
+            raise ValueError("--vis-data is required when --visualize-only is set.")
+        print("--- Running t-SNE visualization only ---")
         visualize_tsne(args)
     else:
-        print("--- 开始 SimCLR 训练 ---")
+        print("--- Starting SimCLR training ---")
         dataset = ContrastiveLearningDataset(args.data)
         train_dataset = dataset.get_dataset(args.dataset_name, args.n_views)
         train_loader = torch.utils.data.DataLoader(
@@ -99,24 +98,24 @@ def main():
             simclr.train(train_loader)
 
         if args.vis_data:
-            print("\n--- 训练完成，开始进行 t-SNE 可视化 ---")
+            print("\n--- Training complete; starting t-SNE visualization ---")
             visualize_tsne(args)
         else:
-            print("\n--- 训练完成 ---")
+            print("\n--- Training complete ---")
 
 
 def visualize_tsne(args):
     """
-    依次生成 Epoch 0, 50, 100 的图像，
-    使用热启动 (Hot Start) 保证图像形态的连续演变。
+    Generate feature-space plots at epochs 0, 50, and the final epoch.
+    Warm-start t-SNE with the coordinates from the previous epoch.
     """
 
-    # 1. 定义目标 Epoch
+    # Define the target epochs.
     target_epochs = [0, 50, args.epochs]
-    print(f"--- 准备生成序列图象 ---")
-    print(f"目标 Epoch: {target_epochs}")
+    print("--- Preparing the feature-space visualization sequence ---")
+    print(f"Target epochs: {target_epochs}")
 
-    # 数据准备
+    # Prepare the visualization dataset.
     vis_transform = transforms.Compose([
         transforms.Resize((64, 64)),
         transforms.ToTensor(),
@@ -127,47 +126,44 @@ def visualize_tsne(args):
     vis_loader = torch.utils.data.DataLoader(
         vis_dataset,
         batch_size=args.batch_size,
-        shuffle=False,  # 必须 False，保证点一一对应
+        shuffle=False,  # Keep sample order aligned across epochs.
         num_workers=args.workers,
         pin_memory=True
     )
 
-    prev_embedding = None # 用于存储上一轮坐标，实现热启动
+    prev_embedding = None  # Coordinates from the previous epoch.
 
-    # --- 循环开始 ---
+    # Iterate over the target epochs.
     for epoch_idx in target_epochs:
-        print(f"\n========================================")
-        print(f"正在处理 Epoch {epoch_idx} ...")
-        print(f"========================================")
+        print("\n========================================")
+        print(f"Processing epoch {epoch_idx} ...")
+        print("========================================")
 
-        # 1. 加载模型
+        # Load the encoder.
         model = ResNetSimCLR(base_model=args.arch, out_dim=args.out_dim)
         model = model.to(args.device)
 
         if epoch_idx == 0:
-            print("  -> 加载随机初始化权重 (Random Init)")
+            print("  -> Using random initialization")
         else:
             checkpoint_path = os.path.join(args.output, f'checkpoint_{epoch_idx:04d}.pth.tar')
             if not os.path.exists(checkpoint_path):
-                print(f"  警告: 找不到 {checkpoint_path}，跳过此阶段")
+                print(f"  Warning: {checkpoint_path} was not found; skipping this epoch")
                 continue
-            print(f"  -> 加载权重: {checkpoint_path}")
+            print(f"  -> Loading checkpoint: {checkpoint_path}")
             checkpoint = torch.load(checkpoint_path, map_location=args.device)
             state_dict = checkpoint.get('state_dict', checkpoint)
             model.load_state_dict(state_dict, strict=False)
 
         model.eval()
 
-        # 2. 提取特征
+        # Extract features.
         features_list, labels_list = [], []
         with torch.no_grad():
-            for images, labels in tqdm(vis_loader, desc=f"  提取特征"):
+            for images, labels in tqdm(vis_loader, desc="  Extracting features"):
                 images = images.to(args.device)
                 feats = model.backbone(images)
                 if len(feats.shape) > 2: feats = feats.view(feats.size(0), -1)
-
-                # --- 【核心修复】归一化 ---
-
 
                 features_list.append(feats.cpu().numpy())
                 labels_list.append(labels.cpu().numpy())
@@ -175,35 +171,35 @@ def visualize_tsne(args):
         features = np.concatenate(features_list, axis=0)
         all_labels = np.concatenate(labels_list, axis=0)
 
-        # Epoch 0 的微小噪声处理 (防止SVD崩溃)
+        # Add a small perturbation when the features are degenerate.
         std_val = np.std(features)
         if epoch_idx == 0 or std_val < 1e-4:
             noise = np.random.normal(0, 1e-5, features.shape)
             features = features + noise
 
-        # 3. 计算 t-SNE (关键的热启动逻辑)
+        # Compute t-SNE coordinates.
         if prev_embedding is None:
-            # 第一张图 (Epoch 0)：只能随机初始化
+            # Initialize the first plot randomly.
             init_mode = 'random'
-            print("  -> t-SNE 初始化: Random (冷启动)")
+            print("  -> t-SNE initialization: random")
         else:
-            # 后续图：使用上一轮的坐标作为起点
+            # Warm-start subsequent plots from the previous coordinates.
             init_mode = prev_embedding
-            print("  -> t-SNE 初始化: Hot Start (继承上一轮坐标)")
+            print("  -> t-SNE initialization: warm start")
 
         tsne = TSNE(n_components=2, init=init_mode, perplexity=45, n_iter=1000, random_state=args.seed)
 
         try:
-            # 计算当前 Epoch 的坐标
+            # Compute the coordinates for the current epoch.
             current_embedding = tsne.fit_transform(features)
-            # 更新 prev_embedding 供下一轮使用
+            # Reuse these coordinates for the next epoch.
             prev_embedding = current_embedding
         except Exception as e:
-            print(f"  [Error] t-SNE 计算出错: {e}")
+            print(f"  [Error] t-SNE failed: {e}")
             continue
 
-        # 4. 立即绘图并保存 (在循环内部)
-        print(f"  -> 正在绘制 Epoch {epoch_idx} 的图像...")
+        # Draw and save the plot immediately.
+        print(f"  -> Drawing the plot for epoch {epoch_idx} ...")
         plt.figure(figsize=(10, 10))
         scatter = plt.scatter(
             current_embedding[:, 0],
@@ -216,15 +212,15 @@ def visualize_tsne(args):
 
         plt.axis('off')
 
-        # 动态文件名
+        # Use an epoch-specific filename.
         save_name = f'tsne_hot_start_epoch_{epoch_idx}.png'
         save_path = os.path.join(args.output, save_name)
         plt.savefig(save_path, dpi=300, bbox_inches='tight', pad_inches=0)
-        plt.close() # 这一步很重要，防止内存溢出
+        plt.close()  # Close the figure to prevent memory growth.
 
-        print(f"  -> [成功] 图片已保存至: {save_path}")
+        print(f"  -> Saved visualization to: {save_path}")
 
-    print("\n--- 全部处理完成 ---")
+    print("\n--- All visualizations complete ---")
 
 if __name__ == "__main__":
     main()

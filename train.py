@@ -68,8 +68,8 @@ parser.add_argument("--train_samples", type=int, default=40,
 
 def init_logger(log_file=None, log_dir=None, log_level=logging.INFO, mode='w', stdout=True):
     """
-    log_dir: 日志文件的文件夹路径
-    mode: 'a', append; 'w', 覆盖原文件写入.
+    log_dir: directory for log files
+    mode: 'a' to append; 'w' to overwrite.
     """
     def get_date_str():
         now = datetime.datetime.now()
@@ -83,7 +83,7 @@ def init_logger(log_file=None, log_dir=None, log_level=logging.INFO, mode='w', s
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     log_file = os.path.join(log_dir, log_file)
-    # 此处不能使用logging输出
+    # Print the path before logging is configured.
     print('log file path:' + log_file)
 
     logging.basicConfig(level=logging.DEBUG,

@@ -280,9 +280,11 @@ class argrepel(nn.Module):
         real = real.unsqueeze(0).expand(b, -1, -1, -1, -1).permute(1,0,2,3,4)
         index = torch.mean((fake-real)**2,dim=(2,3,4))
         if second:
-            diag = torch.diag(index)  # 取 a 对角线元素，输出为 1*3
-            a_diag = torch.diag_embed(diag)  # 由 diag 恢复为三维 3*
+            # Remove self-pairs from the matching matrix.
+            diag = torch.diag(index)
+            a_diag = torch.diag_embed(diag)
             index = index-a_diag
+            # Penalize diagonal entries to prevent self-matching.
             index += 100 * torch.eye(b, device=fake.device)
         index = torch.argmin(index,dim=-1)
         target = real[index]
@@ -351,10 +353,6 @@ class uniform(nn.Module):
 
         l_pos = torch.einsum('ck,ck->c', [cv_f, cv_mix]).unsqueeze(-1)
         l_neg = torch.einsum('ik,jk->ij', [cv_f, cv_fr])
-
-        # diag = torch.diag(l_neg[:,:l_neg.size(0)])  # 取 a 对角线元素，输出为 1*3
-        # a_diag = torch.diag_embed(diag+100)  # 由 diag 恢复为三维 3*
-        # l_neg[:,:l_neg.size(0)] = l_neg[:,:l_neg.size(0)] - a_diag
 
         # logits: Nx(1+K)
         logits = torch.cat([l_pos, l_neg], dim=1)

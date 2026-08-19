@@ -39,7 +39,7 @@ class Generator(nn.Module):
             nn.InstanceNorm2d(32),
             nn.LeakyReLU(0.2),
 
-            # 最终输出通道调整
+            # Adjust the final output channel count.
             nn.Conv2d(32, args.channels, 3, padding=1),
             nn.Tanh()
         )
